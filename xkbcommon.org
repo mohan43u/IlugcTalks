@@ -45,7 +45,6 @@ Edit the server-0.xkb file to suit your need, then load the edited xkb file back
 #+BEGIN_SRC sh
   xkbcomp server-0.xkb :0
 #+END_SRC
-
 *** =xkb_keycodes=​
 this section of xkb file defines kernel keycodes mapped to xkb keycodes (xkb-keycodes = kernel-keycodes + 8)
 *** =xkb_types=
