@@ -1,0 +1,87 @@
+#+STARTUP: overview
+#+STARTUP: hidestars
+#+AUTHOR: Mohan Raman
+
+* xkbcommon
+the library which handles keyboard inputs in Xorg/Wayland display servers
+** input devices
+*** how to find input devices
+#+BEGIN_SRC sh
+  for inputdev in /sys/class/input/input*/name; do cat "${inputdev}" | xargs -Ixxxx echo "${inputdev}: xxxx"; done
+#+END_SRC
+
+*** kernel scancodes and keycodes
+**** hwdb
+hwdb used to modify keyboard scan code at kernel level during boot using files in ~/etc/udev/hwdb.d~ generate mapping file using ~systemd-hwdb~ command
+**** getkeycodes
+~getkeycodes~ command used to show kernel's scancode-to-keycode mapping (VT required)
+**** setkeycodes
+~setkeycodes~ command used to set kernel's scancode to keycode mapping (VT required)
+**** showkey
+~showkey~ command used to show the current scancode or keycode when pressing the keys in keyboard (VT required), we need to wait for 10 seconds to exit this tool.
+#+BEGIN_SRC sh
+  showkey --scancodes
+#+END_SRC
+#+BEGIN_SRC sh
+  showkey --keycodes
+#+END_SRC
+**** evtest
+~evtest~ is also used to show current keycode when pressing the keys in keyboard (no virtual terminal needed)
+#+BEGIN_SRC sh
+  evtest /dev/input/event2
+#+END_SRC
+*** console keymaps
+**** loadkeys
+~lodkeys~ command used to load keymap for console (VT required)
+**** dumpkeys
+~dumpkeys~ command used to show the current keymap of console (VT required)
+** xkb keymaps
+*** xkbcomp
+~xkbcomp~ command used to retrive or set Xorg kemap, the below command will generate server-0.xkb file in the current directory from the current Xorg's loaded keymap
+#+BEGIN_SRC sh
+  xkbcomp :0
+#+END_SRC
+Edit the server-0.xkb file to suit your need, then load the edited xkb file back to Xorg server
+#+BEGIN_SRC sh
+  xkbcomp server-0.xkb :0
+#+END_SRC
+
+*** =xkb_keycodes=​
+this section of xkb file defines kernel keycodes mapped to xkb keycodes (xkb-keycodes = kernel-keycodes + 8)
+*** =xkb_types=
+this section of xkb file defines Levels
+*** =xkb_compatibility=
+this section of xkb file defines how to interpret key combinations and set modifier states
+*** =xkb_symbols=
+this section of xkb file maps xkb keycodes to Keysyms, keysyms are the ones which are send to the end application where user interact.
+*** MLVO notation
+MLVO means Model, Layout, Variant, Option, this is how we load keymap into Xorg or Wayland display servers
+*** localectl
+~localectl~ command will help us show the current MLVO of the loaded keymap, also will show list of /Models/, /Layouts/, /Varients/ and /Options/ available
+#+BEGIN_SRC sh
+  localectl status
+#+END_SRC
+*** get xkb file in Wayland Compositor
+**** xkbcli
+~xkbcli~ used to do various purposes related to xkb
+below command will show the current xkb keycode from Xorg server
+#+BEGIN_SRC sh
+  xkbcli interactive-x11
+#+END_SRC
+below command will show the current xkb keycode from Wayland server
+#+BEGIN_SRC sh
+  xkbcli interactive-wayland
+#+END_SRC
+below command is used to dump xkb keymap from current Wayland Compositor
+#+BEGIN_SRC sh
+  xkbcli dump-keymap-wayland
+#+END_SRC
+*** load xkb file into Wayland Compositor
+There is no generic command to load xkbfile into Wayland Compositor, different compositors uses different methods
+**** Sway
+place =input <keyboard> xkb_file <your-custom-xkb-file>= in your sway config file(=~/.config/sway/config=), then reload sway (Mod+Shift+c)
+**** riverwm
+Run this command to dymanically load custom xkb file into riverwm
+#+BEGIN_SRC sh
+  riverctl keyboard-layout-file <your-custom-xkb-file>
+#+END_SRC
