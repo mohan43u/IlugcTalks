@@ -1,0 +1,60 @@
+#+STARTUP: overview
+#+STARTUP: hidestars
+#+STARTUP: indent
+#+AUTHOR: Mohan Raman
+
+* CUPS
+[[https://openprinting.github.io/cups/#INTRO][Common Unix Printing System]]
+** PPDs
+These are drivers for printers which helps CUPS to communicate with printers, mostly placed under =/etc/cups/ppd= directory
+** Commandline Tools
+*** lpinfo
+shows printers available to cups
+#+BEGIN_SRC sh :results output
+  lpinfo -v
+#+END_SRC
+shows various models available in cups
+#+BEGIN_SRC sh :results output
+  lpinfo -m
+#+END_SRC
+*** lpadmin
+add printer
+#+BEGIN_SRC sh :results output
+  lpadmin -E -m 'lsb/usr/cups-pdf/CUPS-PDF_opt.ppd' -p PDF-test -v 'cups-pdf:/' && cupsenable PDF-test && cupsaccept PDF-test
+#+END_SRC
+remove printer
+#+BEGIN_SRC sh :results output
+  lpadmin -x PDF-test
+#+END_SRC
+*** lpoptions
+shows/set default settings for a particular/default printer
+#+BEGIN_SRC sh :results output
+  lpoptions -p PDF-test
+#+END_SRC
+*** lp
+print files
+#+BEGIN_SRC sh :results output
+  lp -d PDF-test /usr/share/cups/data/testprint
+#+END_SRC
+*** lpstat
+show various statistics of all configured printers
+#+BEGIN_SRC sh :results output
+  lpstat -t
+#+END_SRC
+** Printers with mDNS/DNS-SD support
+CUPS provides support for printer discovery through mDNS/DNS-SD using =cups-browsed= daemon, we can see the discovered printers using =lpinfo -v= command
+** IPP
+CUPS provides support for printers which supports [[https://openprinting.github.io/driverless/][IPP Protocol]]
+*** Commandline Tools
+**** ippfind
+helps to find printers with IPP support in local network
+#+BEGIN_SRC sh :results output
+  ippfind
+#+END_SRC
+**** ipptool
+helps to find various IPP details from IPP supported printers, following commandline help to get all the ipp attributes from the IPP supported printer
+#+BEGIN_SRC sh :results output
+  ipptool --ippserver ipp-attributes.txt 'ipp://guest0-linuxmint.local:631/printers/PDF' get-printer-attributes.test && cat ipp-attributes.txt && rm ipp-attributes.txt
+#+END_SRC
+*** Auto Generate PPD
+using the ipptool cups generate PPD file based on the attributes from the IPP printer and places the auto-generated ppd file under =/etc/cups/ppd/= directory
