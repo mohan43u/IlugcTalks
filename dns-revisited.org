@@ -1,0 +1,76 @@
+#+STARTUP: overview
+#+STARTUP: indent
+#+AUTHOR: Mohan Raman
+
+* DNS
+  Domain Name System
+** How DNS Works
+*** Root Domain (The Dot ".")
+#+BEGIN_SRC sh :results output
+  dig . NS
+#+END_SRC
+
+*** Top Level Domains (TLDs)
+#+BEGIN_SRC sh :results output
+  dig com. @a.root-servers.net NS
+#+END_SRC
+
+*** Domains
+#+BEGIN_SRC sh :results output
+  dig kaniyam.com. @l.gtld-servers.net. NS
+#+END_SRC
+
+#+BEGIN_SRC sh :results output
+  dig kaniyam.com. @ns1.dreamhost.com. A
+#+END_SRC
+
+*** Sub Domains
+#+BEGIN_SRC sh :results output
+  dig tossconf25.kaniyam.com. @ns1.dreamhost.com. A
+#+END_SRC
+
+*** FQDN (Fully Qualified Domain Name)
+tossconf25.kaniyam.com.
+*** Resolver
+**** /etc/resolv.conf
+**** udp port 53
+*** DNS Servers
+Contains Resource Records for specific domain.
+*** Resource Records (RRs)
+**** A and AAAA
+IPv4 (A) and IPv6 (AAAA) address records
+**** CNAME
+Cononical name or redirection record
+**** NS
+Nameserver Records
+**** MX
+Mail Server Records
+**** PTR
+Reverse IP lookup Records
+**** TXT
+Free flow string records, often contains security related data
+** Securing DNS
+*** DNSSEC
+**** RRSIG
+Resource Records Signature
+**** DNSKEY (ZSK and KSK)
+Public Keys to verify Resource Records
+**** DS
+Deligation Signer Record in the Upper Domain
+**** NSEC
+Denial of Existance Record
+*** DNS over TLS
+Provides DNS using special port secured using TLS certificate
+**** Port 853
+*** DNS over HTTPS
+Provides DNS over HTTPS
+**** Port 443
+** DNS DDoS Attack (A real life experience)
+ * aaa.hmdns.org serving payload through TXT record
+ * my DNS server uses few upstream dns servers connecting through DNS-over-HTTPS, one of them is https://dns.alidns.com/dns-query
+ * This alidns suppose to use DNSSEC to verify results, but it doesn't, other upstream dns servers like https://dns.cloudflare.com/dns-query uses DNSSEC to verify the results
+ * Since my DNS server accept query from alidns it served that payload TXT record of aaa.hmdns.org to anyone asking it in udp port 53
+ * Hackers added my dns server to their botnet nodes to fetch the payload trough my DNS server, those botnet nodes started sending DNS query requests to my DNS server to get the payload
+ * My DNS bombarded with DNS query requests (Thousands of query requests per second), since my DNS server saves those queries in disk, my server's disk got filled quickly affecting other services running in my server.
+ * Closed udp port 53, configured my machines to use VPN to access my DNS server
+ * Opening udp port 53 to Public Internet is a Bad Mistake. lession learned.
