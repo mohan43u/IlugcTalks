@@ -1,4 +1,5 @@
 #+STARTUP: overview
+#+STARTUP: hidestars
 #+STARTUP: indent
 #+AUTHOR: Mohan Raman
 
@@ -73,4 +74,4 @@ Provides DNS over HTTPS
  * Hackers added my dns server to their botnet nodes to fetch the payload trough my DNS server, those botnet nodes started sending DNS query requests to my DNS server to get the payload
  * My DNS bombarded with DNS query requests (Thousands of query requests per second), since my DNS server saves those queries in disk, my server's disk got filled quickly affecting other services running in my server.
  * Closed udp port 53, configured my machines to use VPN to access my DNS server
- * Opening udp port 53 to Public Internet is a Bad Mistake. lession learned.
+ * Opening udp port 53 to Public Internet is a Bad Mistake. lesson learned.
