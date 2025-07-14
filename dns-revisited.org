@@ -1,6 +1,7 @@
 #+STARTUP: overview
 #+STARTUP: hidestars
 #+STARTUP: indent
+#+TITLE: DNS Revisited
 #+AUTHOR: Mohan Raman
 
 * DNS

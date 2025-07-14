@@ -1,0 +1,102 @@
+#+STARTUP: overview
+#+STARTUP: hidestars
+#+STARTUP: indent
+#+TITLE: Dual Booting
+#+AUTHOR: Mohan Raman
+
+* Dual Booting
+To make windows and linux co-exist on the same machine
+** BitLocker
+This is an encryption method used to encrypt entire partition in Windows. If this is enabled we cannot dual boot. Watch this Video [[https://www.youtube.com/watch?v=oNOmXLkXfqM]] to check if BitLocker is turned on for a particular partition. To turn off BitLocker, follow this Video  [[https://www.youtube.com/watch?v=AU5nm7b1aT0]]
+
+** UEFI / BIOS
++ UEFI :: Modern boot firmware
++ BIOS :: Old boot firmware
+
+To Check which boot firmware your system use in windows, click *Start Menu*, then type *msinfo*, then click *System Information*
+
+[[./dual-boot/msinfo-0.png]]
+
+Check the Boot Mode field whether windows booted in BIOS mode or UEFI mode
+
+[[./dual-boot/msinfo-1.png]]
+
+If the Windows booted in UEFI mode, then Linux Live Booting should also boot in the same UEFI mode. You can check which mode Live Booting is in through the following command
+
+#+BEGIN_SRC sh :results output
+  findmnt /sys/firmware/efi/efivars &>/dev/null && echo "UEFI mode" || echo "BIOS mode"
+#+END_SRC
+
+You can switch off BIOS mode in your system's BIOS Settings, look for something like /Legacy Mode/ or /Legacy Boot/ or /BIOS Mode/ and disable it so that Live Boot will be booted only through UEFI.
+
+** Create Partition for Linux in Windows
++ Click *Start Menu*,  then type *Disk Management*, Then start the *Disk Management* Application
++ In Disk Management, check if the existing Partitions type is *Basic*, If it says *Virtual* then we cannot create partition for Linux. First we need to remove those virtual partitions or transform those virtual partitions into *Basic* partitions. Scope of this document cannot cover this topic, take AI's help.
+
+[[./dual-boot/partition-0.png]]
+
++ Once we ensure our targetted partition's type is *Basic*, Right Click on that partition and click *Shrink*
+
+[[./dual-boot/partition-1.png]]
+
++ Windows will calculate how much it can shrink, and show us that information and ask us how much we actually need to shrink, We need to choose how much disk space we want to allocate for the Linux. Linux will work fine with 20GB for on and off use. But if the user is planning for daily drive linux, make sure it is atleast 50GB to 80GB. Once you decide, put that Size in MB on "Enter the amount of space to shrink in MB" box.
+
+[[./dual-boot/partition-2.png]]
+
++ Windows will do the job and finally we will see *Unallocated* free space for the Size we requested.
+
+[[./dual-boot/partition-3.png]]
+
+** Selecting Root Mountpoint during Linux Installation
++ Boot Live Linux and start the Installation Process
++ During Installation Process, when the Installation Wizard asks for *Installation Type*, choose *Something Else*
+
+[[./dual-boot/installation-0.png]]
+
++ In the Next screen, Identify and select the *free space* we created in Windows. It may not match the exact size shown in Windows, but it will be very near to that size.
+
+[[./dual-boot/installation-1.png]]
+
++ Then click on the *+* Icon, to open the Create Partition dialog box
+
+[[./dual-boot/installation-2.png]]
+
++ Click on the *Mount point:* box, select */* to associate the newly created partition into the Root directory of Linux
+
+[[./dual-boot/installation-3.png]]
+
++ Make sure the partition association is correct and the file system type is *Ext4* (Linux default filesystem)
+
+[[./dual-boot/installation-4.png]]
+
++ Make sure we only formate the partition we newly created, otherwise *data will be lost*.
+
+[[./dual-boot/installation-5.png]]
+
++ Proceed further and complete the Linux Installation.
+
+** UEFI - Restore Linux from Windows
+
++ Sometimes booting between Windows and Linux, Windows updates may rewrite the boot priority to always directly boot into windows, so we loose option to boot into Linux. To restore, Click *Start* menu, type *cmd* and start *Command Prompt* by choosing *Run As Administrator*.
+
+[[./dual-boot/bcdedit-0.png]]
+
++ Run the following command to list the UEFI firmware bootloaders currently available, in the output, you can see the *displayorder*, we need to set *Linux* entry as first in the *displayorder*.
+
+#+BEGIN_SRC sh :results output
+  bcdedit /enum firmware
+#+END_SRC
+
+[[./dual-boot/bcdedit-1.png]]
+
++  Copy the *Linux's* bootloader's *identifier* and run the following command replacing /<linux-bootloader-identifier>/ with actual identifier
+
+#+BEGIN_SRC sh :results output
+  bcdedit /set {fwbootmgr} displayorder <linux-bootloader-identifier> /addfirst
+#+END_SRC
+
+[[./dual-boot/bcdedit-3.png]]
+
++ This will set Linux's bootloader entry at first priority, so GRUB will start after booting instead of directly going to windows. GRUB provides choice to boot either windows or linux.
+
+[[./dual-boot/bcdedit-4.png]]

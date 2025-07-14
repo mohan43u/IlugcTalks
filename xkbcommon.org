@@ -1,6 +1,7 @@
 #+STARTUP: overview
 #+STARTUP: hidestars
 #+STARTUP: indent
+#+TITLE: xkbcommon
 #+AUTHOR: Mohan Raman
 
 * xkbcommon

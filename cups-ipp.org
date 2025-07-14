@@ -1,6 +1,7 @@
 #+STARTUP: overview
 #+STARTUP: hidestars
 #+STARTUP: indent
+#+TITLE: CUPS
 #+AUTHOR: Mohan Raman
 
 * CUPS
