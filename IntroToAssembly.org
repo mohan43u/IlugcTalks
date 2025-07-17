@@ -1,0 +1,197 @@
+#+STARTUP: overview
+#+STARTUP: hidestars
+#+STARTUP: indent
+#+TITLE: Introduction to Assembly Programming - A Forgotten Art
+#+AUTHOR: Mohan Raman
+
+* Intro To Assembly
+** Basics of a Process
+*** What is mean by an Executable
+Set of instructions to CPU organized in a specific format.
+
+*** Executable formats
++ PE :: Portable Executable
++ Mach-O :: Used in Apple Machines
++ ELF :: Executable Linkable Format
+  
+*** CPU Architectures
++ x86 and x86-64 :: Originate from Intel, also provided by AMD
++ ARM and ARM64 :: Owned by ARM Holdings, licenced to Apple, Qualcomm, Meditek, Samsung etc.
+  
+*** How to create an Executable using C programming
+#+BEGIN_SRC c
+  // helloworld.c
+  #include<stdio.h>
+  int main(int argc,
+           char **argv,
+           char **envp) {
+          printf("hello world\n");
+          return 0;
+  }
+#+END_SRC
+#+BEGIN_SRC sh :results output
+  gcc helloworld.c
+#+END_SRC
+
+** What happens when we invoke C compiler
+*** Pre Processing
+#+BEGIN_SRC sh :results output
+  gcc -E -o helloworld.i helloworld.c
+#+END_SRC
+*** Compiling
+#+BEGIN_SRC sh :results output
+  gcc -S -o helloworld.s helloworld.i
+#+END_SRC
+*** Assembling
+#+BEGIN_SRC sh :results output
+  as -o helloworld.o helloworld.s
+#+END_SRC
+*** Linking
+#+BEGIN_SRC sh :results output
+    ld -I /lib64/ld-linux-x86-64.so.2 -o helloworld /usr/lib/x86-64-linux-gnu/crt1.o helloworld.o -lc
+#+END_SRC
+*** Dynamic Linker
++ Responsible to load shared objects into memory and start the executable, usually available as /lib64/ld-linux-x86-64.so.2 in 64bit linuxmint.
++ Parses ELF executable to load shared objects
++ sets function addresses GOT (for PIE executables)
++ calls main
+
+** Basics of Digital Logic
+*** Combinational Circuits
++ Logic Gates :: AND, OR, NOT, NAND, NOR, XOR, XNOR
++ Truth Table
++ Boolean Algebra :: A + B . C = A . C + B . C
++ Adder, Multiplexer, Demultiplexer, Decoder, Encoder, Comparitor
+*** Sequential Circuits
++ SR Latch
++ Flip-Flop
++ Registers
++ Clock Cycle
+*** ASICs (Application Specific Integrated Circuits)
++ RTL (Register Transfer Logic) and HDL (Hardware Description Language, SystemVerilog (iverilog))
++ Gate-Level Netlist (Yosys)
++ OpenLane (RTL to GDSII)
++ Foundries
+  - Pure Foundries (TSMC, UMC) ::  Components, American Components, Russian Components ALL MADE IN TAIWAN !!!!! -- [[https://www.youtube.com/watch?v=cHf2qm-8I0Y][One Crazy Russian Cosmonaut]]
+  - IDMs (Intel, Samsung) :: Integrated Device Manufacturers
++ ASML (Manufacturer of EUV (Extreame UltraViolet) Lithography)
+  
+** Assembly Programming (x86-64)
+Giving Instructions to an x86-64 CPU
+*** Registers
+Writable
++ AX (RAX, EAX, AX, AH, AL)
++ BX (RBX, EBX, BX, BH, BL)
++ CX (RCX, ECX, CX, CH, CL)
++ DX (RDX, EDX, DX, DH, DL)
++ SP (RSP, ESP, SP)
++ BP (RBP, EBP, BP)
++ SI (RSI, ESI, SI)
++ DI (RDI, EDI, DI)
++ R8 - R15 (Rn, RnD, RnW, RnB)
+Non Writable
++ IP (RIP, EIP, IP)
++ FLAGS (RFLAGS, EFLAGS, FLAGS)
+*** Endianness
++ Big Endian :: 0x12345678 = 0x12 0x34 0x56 0x78
++ Little Endian :: 0x12345678 = 0x78 0x56 0x34 0x12
+*** Opcodes
++ mov
++ cmp
++ cmov
++ jmp
++ push
++ pop
++ call
++ ret
+*** Opcode Suffixes
++ 8 bit (b, byte)
++ 16 bit (w, word)
++ 32 bit (l, doubleword)
++ 64 bit (q, quadword)
+*** Operand Specifiers
++ imm :: movq $10, %rax
++ %reg :: movq %rbx, %rax
++ (%reg) :: movq (%rbx), %rax
++ offset(%reg, %indexreg, multiplier) :: movq 8(%rbx, %rcx, 4), %rax (value in memory pointed by calculating %rbx + 8 + (%rcx * 4))
+
+** First Assembly Program
+*** Interrupts
+**** Hardware Interrupts
+#+BEGIN_SRC sh :results output
+  cat /proc/interrupts
+#+END_SRC
+**** Software Interrupts
+#+BEGIN_SRC assembly :results output
+  int 0x80
+#+END_SRC
+*** Simple Program with Software Interrupt
+#+BEGIN_SRC assembly :results output
+ 	.global _start
+	.section .text
+_start:
+	movq $241, %rbx
+	movq $1, %rax
+	int $0x80
+#+END_SRC
+#+BEGIN_SRC sh :results output
+  as -o assembly.o assembly.s; ld -static -o assembly assembly.o; ./assembly; echo $?
+#+END_SRC
++ ~exit~ syscall (0x01) [x86 architecture, not x86-64]
+*** Stack and Functions
+#+BEGIN_SRC assembly :results output
+	.global _start
+	.section .text
+
+addfunc:
+	pushq %rbp
+	movq %rsp, %rbp
+	subq $16, %rsp
+	movq %rdi, 8(%rsp)
+	movq %rsi, (%rsp)
+	movq 8(%rsp), %rax
+	addq (%rsp), %rax
+	movq %rbp, %rsp
+	popq %rbp
+	ret
+	
+_start:
+	movq $10, %rdi
+	movq $20, %rsi
+	call addfunc
+	movq %rax, %rdi
+	movq $60, %rax
+	syscall
+#+END_SRC
+#+BEGIN_SRC sh :results output
+  as -o assembly.o assembly.s; ld -static -o assembly assembly.o; ./assembly; echo $?
+#+END_SRC
++ ~exit~ syscall (0x3c) [x86-64 architecture]
+*** Calling C library functions from Assembly
+#+BEGIN_SRC assembly :results output
+ 	.global _start
+
+	.section .data
+hellostring:	.asciz "helloworld"
+
+	.section .text
+_start:
+	movq $hellostring, %rdi
+	call puts
+	movq %rax, %rdi
+	movq $60, %rax
+	syscall
+#+END_SRC
+#+BEGIN_SRC sh :results output
+  as -o assembly.o assembly.s; ld -I /lib64/ld-linux-x86-64.so.2 -o assembly assembly.o -lc; ./assembly; echo $?
+#+END_SRC
+*** Heap
++ ~mmap~ syscall (0x09)
++ ~munmap~ syscall (0x0b)
+*** GDB - GNU Debugger
++ starti
++ break
++ nexti
++ stepi
++ disassemble
++ info registers
