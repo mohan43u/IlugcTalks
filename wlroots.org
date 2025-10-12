@@ -1,0 +1,95 @@
+#+STARTUP: overview
+#+STARTUP: hidestars
+#+STARTUP: indent
+#+TITLE: Wlroots
+#+AUTHOR: Mohan Raman
+
+* Modern Linux Graphics Stack
+
+** Wayland
+- Set of protocols to implement display server
+- you can explore the various protocols in wayland using [[https://wayland.app/protocols/]]
+
+*** Compositor
+- Combines multiple framebuffers belongs to multiple window applications and generates a single framebuffer to send it to display
+- manages input devices and send input events to appropriate subscribed window applications
+- uses libGL/libvulkan to communicate with GPU
+
+**** Wlroots
+- A library which implements wayland protocols
+- Used to make wayland compositors development easy
+
+*** Window application
+- A process which is responsible to show graphical window
+- communicates with Compositor to display its graphical contents
+- In Linux, Mostly developed using gtk (c) or Qt GUI frameworks (c++)
+- uses libGL/libvulkan (c) to communicate with GPU
+- uses framebuffers
+
+*** Framebuffers
+- A display device representation in a window application
+- All 3d graphics objects are projected into this framebuffer
+- framebuffer need to be backed by a texture during rendering
+- Two type of framebuffers, default framebuffer and offline FBOs
+- default framebuffer is the one used to send graphical information to display device via compositor
+- offline FBOs (Frame Buffer Objects) are used for off-screen-rendering.
+
+*** Textures
+- collection of bytes which represents an 2d image
+- contains dimentions information (width x height)
+- contains pixel format information (fourcc, [[https://www.kernel.org/doc/html/latest/userspace-api/media/v4l/pixfmt.html]])
+
+** Types of Window Applications
+
+*** Display Manager/Login Manager
+- Manages user sessions
+- frontend to systemd-logind
+- starts choosen window manager or desktop environment
+- GDM (Gnome Display Manager)
+- SDDM (KDE Display Manager)
+- Lightdm
+
+*** Window Manager
+- another name to Wayland Compositors
+- sway
+- labwc
+- hyprland
+- mutter (gnome)
+- kwin (kde)
+
+*** Desktop Environment
+- Set of integrated applications
+- Gnome
+- KDE
+- xfce
+- lxde
+- cinnamon
+
+*** Regular Window Application
+- Your own GUI application
+- firefox, chromium
+- libreoffice (writer/calc/draw etc), gimp
+- graphical terminal applications
+  - foot
+  - alacritty
+  - kitty
+  - wezterm
+  - ghostty
+  - ptyxis
+
+** Wlroots
+- was initially part of sway window manager
+- selerated as a standalone library to implement wayland protocols
+- simplified wayland compositor development
+- backbone of most of the wayland compositors
+
+*** Wlroots based compositors
+- sway
+- labwc (openbox for wayland)
+- river
+- dwl (dwm for wayland)
+- cagebreak (ratpoison for wayland)
+- tinybox (fluxbox/blackbox for wayland)
+- hoplang (xfce's xfwm for wayland)
+- wayfire (compiz for wayland)
+- niri
