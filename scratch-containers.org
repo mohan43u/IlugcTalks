@@ -1,0 +1,67 @@
+#+STARTUP: overview
+#+STARTUP: hidestars
+#+STARTUP: indent
+#+TITLE: Scratch Containers
+#+AUTHOR: Mohan Raman
+
+* Containers
+
+** Chroot
+- Way to isolate File System for a particular process
+- Invented on Version 7 Unix on 1979
+
+** Namespaces
+- Group of isolations including file system isolation
+- Isolated processes co-exists on same system
+  
+** Lxc
+- System containers
+- Earliest Containers system
+
+** Systemd-nspawn
+- Chroot on steroids
+- Simplest way to use container
+
+** Docker
+- Well known container system
+- Previously used lxc for containerization
+- Docker daemon used to provision containers
+
+** Podman
+- Alternative to Docker
+- Rootless containers
+- Daemonless
+  
+* Scratch Containers
+
+** Why?
+- To create Single binary container
+- Very Minimal
+- No OS
+
+** Creating Single Binary
+- Static compilation
+- C/C++/Go/Zig/Rust
+- Static Binaries
+
+** Related Files
+- Related files (.js/.css/.html) can be included in Scratch Container
+- Related files can also be embedded inside Static Binaries
+
+** Multi Stage Build
+- Containers can be build using stages
+- Build stage builds Static Binary
+- We pack that binary and related files into Scratch Container
+
+** Example
+#+BEGIN_SRC Dockerfile
+FROM docker.io/golang:latest as builder
+RUN --mount=type=bind,source=/,target=/register-ilugc-src,rw sh -c 'cd /register-ilugc-src && make && mkdir -p /register-ilugc/src/cmd && cp src/cmd/register /register-ilugc/src/cmd/register && cp -r static /register-ilugc/'
+
+FROM scratch
+COPY --from=builder /register-ilugc /register-ilugc
+VOLUME ["/data"]
+EXPOSE 2203
+WORKDIR /data
+ENTRYPOINT ["/register-ilugc/src/cmd/register"]
+#+END_SRC
