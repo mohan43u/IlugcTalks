@@ -1,0 +1,51 @@
+#+STARTUP: overview
+#+STARTUP: hidestars
+#+STARTUP: indent
+#+TITLE: Creating Registration Form using GoLang
+#+AUTHOR: Mohan Raman
+
+* Indian Linux User Group Chennai (ILUGC)
+** History
+- One of the Oldest Linux user groups in India
+- Started around 1997, conducting meeting every month second Saturday on IITM
+- Covid and virtual meetings
+- Struggle to resume physical meetings inside IITM
+- Dealing with IITM security requirements
+** Collecting Participant Details for ILUGC Monthly Meet
+*** Google Form
+- Cannot use because its ~Google~
+- Proprietary
+- Data not only goes to data collector but also go to google.
+*** KoBoToolbox
+- FOSS
+- Self Hostable [[https://github.com/kobotoolbox/kobo-docker/blob/master/doc/aws-diagram.svg][but not so simple to selfhost]]
+- Free to use their infra but data may not only go to data collector but also go to KoBoToolbox
+*** Writing our own Registration Microservice
+- FOSS
+- Tiny and Self Hostable
+- Data owned by data collector and nobody else
+
+* Register-Ilugc Project
+Source: https://github.com/mohan43u/register-ilugc
+** Initial Version
+- Written in few hours 2 days before the participant details submission date with IITM security
+- No proper db, used csv file as db
+- No confirmation to registered participants, just simply informed them *registration successful*
+- Enough for sharing participant details with IITM Security
+** Version 2
+- Have proper DB (sqlite3) to store participant details
+- Gives confirmation to registered participants with registration details
+- Generates QR code to show in case if someone asks registration details
+- Provides way to unregister in cause if the participant decide to not to attend
+- Simple administration flow to configure and collect details
+- Hosted using a 15MB scratch container
+** Architecture
+*** Backend (GoLang)
+- One of the best Language to create backends
+- Static Single Executable by default
+- Templates to generate html responses
+- Sqlite3 to store participant details including QR code bytes
+- Containerized as scratch container image and running as a rootless container
+*** Frontend (Simple Javascript, html and css)
+- Javascript to send form data to backend
+- CSS to somewhat butify the frontend
