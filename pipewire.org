@@ -1,0 +1,68 @@
+#+STARTUP: overview
+#+STARTUP: hidestars
+#+STARTUP: indent
+#+TITLE: Pipewire
+#+AUTHOR: Mohan Raman
+
+* Pipewire
+** ALSA (Advanced Linux Sound Architecture)
+*** How to get information about the sound cards available in your linux
+#+BEGIN_SRC sh :results output
+  $ cat /proc/asound/cards
+#+END_SRC
+*** How to get information about the components of each Sound Card
+#+BEGIN_SRC sh :results output
+  $ cat /proc/asound/devices
+#+END_SRC
+*** How to get information about which sound modules kernel is using
+#+BEGIN_SRC sh :results output
+  $ cat /proc/asound/modules
+#+END_SRC
+*** How to get information about all PCM (Pulse Code Modulation) devices
+#+BEGIN_SRC sh :results output
+  $ cat /proc/asound/pcm
+#+END_SRC
+*** How to see the actual sound device files
+#+BEGIN_SRC sh :results output
+  $ ls /dev/snd/
+#+END_SRC
+** Sound Manager (or Sound Daemon or Sound Server or Sound Mixer)
+- Used to combine multiple audio output streams from different applications to create single output stream and send it to selected pcm device
+- Without this Sound Manager two applications cannot play sound simulteniously using single pcm device.
+- Without this Sound Manager you cannot dynamically switch between playback devices.
+- Pulseaudio was/is a Sound Manager from 2007
+- Pipewire is a modern Sound Manager replaced/replacing Pulseaudio from 2021
+*** Pipewire Components
+**** Pipewire Daemon
+- Manages sound devices but don't care about how to mix or map application to device (Routing)
+- Contains all the plugins needed for mixing
+**** WirePlumber
+- Don't manage sound devices but manages routing
+- Uses Lua to manage routing
+- Pipewire will not crash even if the wireplumber crash, we don't see glitches when dynamically switching the routing
+**** Pipewire-Pulse
+- Compatibility layer for pulseaudio
+- Applications which don't know how to talk to pipewire can talk to pipewire using pulseaudio protocol
+- Used for smooth transition from pulseaudio to pipewire
+*** Pipewire Tools
+**** wpctl
+- wireplumber client which will provide lot of details about current audio clients
+**** pw-cli
+- pipewire client to manage pipewire process
+**** pw-link
+- pipewire client which provides all the current input/output/link nodes details
+**** pw-dump
+- pipewire client which dumps all information about pipewire objects in json
+**** pw-top
+- pipewire client which is similar to top command but for sound devices
+**** pw-mon
+- pipewire client which provides continuous information about what is happening in pipewire
+**** pw-dot
+- pipewire client to capture the graph and save it as dot file
+- Show how the current nodes are connected
+  #+BEGIN_SRC sh :results output
+    $ pw-dot && dot -Tpng pw.dot >pw.png && xdg-open pw.png
+  #+END_SRC
+**** helvum
+- pipewire client which provides the routing graph visually
+- Similar to pw-dot commandline
