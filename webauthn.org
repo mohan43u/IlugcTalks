@@ -1,0 +1,47 @@
+#+STARTUP: overview
+#+STARTUP: hidestars
+#+STARTUP: indent
+#+TITLE: WebAuthn
+#+AUTHOR: Mohan Raman
+
+* WebAuthn
+** Assymetric cryptography
+**** Public and Private Keys
+#+BEGIN_SRC sh :results output
+  openssl req --newkey rsa:4098 -keyout user0.priv -out user0.crt -x509 -days +365 -noenc
+  openssl pkey -in user0.priv -out user0.pub -pubout
+  openssl pkey -in user0.priv -text
+  openssl pkey -in user0.pub -pubin -text
+#+END_SRC
+**** Encryption and Decryption
+#+BEGIN_SRC sh :results output
+  openssl cms -encrypt -in message.txt -out message_encrypted.txt user0.crt
+  openssl cms -decrypt -in message_encrypted.txt -out message_original.txt -inkey user0.priv
+#+END_SRC
+**** Signing
+#+BEGIN_SRC sh :results output
+  openssl cms -sign -in message.txt -inkey user0.priv -signer user0.crt -out message_signed.txt
+  openssl cms -verify -in message_signed.txt -CAfile user0.crt -out message_orignal.txt
+#+END_SRC
+** Authentication
+Way to identify who you are
+*** Password Based
+classic way of identifying user. Service providers register user accounts with username and password, user need to provide password during login
+*** MFA
+password based with additional TOTP/HOTP (Google Authenticator)
+*** Passwordless
+Modern way to identify user. Uses asymmetric cryptography.
+**** Passkey based
+- During registration, Passkey keep the privkey and sends pubkey to Service provider server
+- During login, service provider send a message, passkey will sign it and send back to service provider, service provider verify the signature using the pubkey
+- WebAuthn is a javascript WebApi which is implemented in every browser
+- CTAP is another protocol used by browser to talk to passkey
+**** Certificate Based
+- uses client side certificate
+- During registration service provider ask the browser for client side certificate
+- Browser send client side certificate from NSS Store to service provider
+- During login, service provider send a message, browser requests the NSS store to sign the message, browser then send back the signed message to Service Provider
+- NSS store may have plugins (~opensc~) to talk to smartcards
+- ~opensc~ uses ~pkcsd~ for signing using smartcards
+- ~pkcsd~ is the actual process which communicates with smartcards
+- smartcards keep the privkey and do the signing whenever requested
